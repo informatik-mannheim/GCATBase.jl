@@ -65,4 +65,4 @@ function Base.circshift(seq::T; k=1) where {T<:BioSequence}
     end
 end
 
-end
+end # module end
