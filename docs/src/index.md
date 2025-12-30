@@ -34,7 +34,7 @@ GCATBase.tetranucs
 ## Tuples from sequences
 
 A sequence can be split into non-overlapping tuples of a given length using the
-[`GCATBase.split`](@ref) function. Here, we generate a random DNA sequence of
+[`Base.split`](@ref) function. Here, we generate a random DNA sequence of
 length 10 and split it into codons (tuples of length 3):
 
 ```@example rt
