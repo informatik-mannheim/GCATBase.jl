@@ -1,7 +1,7 @@
 module GCATBase
 
 export alltuples, tuples, circshift, translateAA2Codons, translateCodon2AA, aminoAcidPerCodon
-export aminoAcids
+export stripped_alphabet
 
 using BioSequences, BioSymbols
 using DocStringExtensions
@@ -9,24 +9,24 @@ using Pipe: @pipe
 
 stripped_alphabet(_::Type{DNA}) = (DNA_A, DNA_T, DNA_C, DNA_G)
 stripped_alphabet(_::Type{RNA}) = (RNA_A, RNA_U, RNA_C, RNA_G)
+stripped_alphabet(_::Type{AminoAcid}) = (AA_A, AA_R, AA_N, AA_D, AA_C, AA_Q, AA_E, AA_G, AA_H, 
+AA_I, AA_L, AA_K, AA_M, AA_F, AA_P, AA_S, AA_T, AA_W, AA_Y, AA_V)
 
 """
     $(TYPEDSIGNATURES)
 
 Create all possible tuples of length `l` from the given `alphabet`.
 The tuples are returned as a vector of `LongDNA` or `LongRNA` sequences,
-depending on the specified sequence type `S`.
+depending on the type of the alphabet (`DNA` or `RNA`).
 """
-function alltuples(alphabet::NTuple{4,T}, l::Int) where {T<:BioSymbol}
+function alltuples(alphabet::NTuple{N,Union{DNA, RNA}}, l::Int)::Vector{Union{LongDNA,LongRNA}} where {N}
     S = typeof(alphabet[1])
     v = repeat([alphabet], l)
     ts = reshape(collect(Iterators.product(v...)), 1, :)[1, :] #  make vector
     if S == DNA
         return [LongDNA{4}(t) for t in ts]
-    elseif S == RNA
-        return [LongRNA{4}(t) for t in ts]
     else
-        error("Unsupported sequence type. Must be DNA or RNA.")
+        return [LongRNA{4}(t) for t in ts]
     end
 end
 
@@ -112,8 +112,6 @@ function translateAA2Codons(code::BioSequences.GeneticCode, S::Union{Type{DNA},T
 end
 
 translateAA2Codons() = translateAA2Codons(ncbi_trans_table[1], DNA)
-
-aminoAcids(code::BioSequences.GeneticCode) = collect(keys(translateAA2Codons(code, DNA)))
 
 """
     $(TYPEDSIGNATURES)

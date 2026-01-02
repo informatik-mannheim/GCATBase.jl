@@ -1,8 +1,13 @@
 using GCATBase
 using Test, BioSequences
 
-@testset "Codons" begin
+@testset "Predefined set" begin
+    @test length(GCATBase.dinucs) == 16
     @test length(GCATBase.codons) == 64
+    @test length(GCATBase.tetranucs) == 256
+
+    S = alltuples((DNA_A, DNA_T), 2)
+    @test length(S) == 4
 end
 
 @testset "split" begin
@@ -90,17 +95,17 @@ end
     @test circshift(dna"A"; k=-2) == dna"A"
     @test circshift(dna"AT"; k=-2) == dna"AT"
     @test circshift(dna"ATG"; k=-2) == dna"TGA"
-    @test circshift(dna"ATGC"; k=-2) == dna"GCAT"    
+    @test circshift(dna"ATGC"; k=-2) == dna"GCAT"
 
-    @test circshift(dna"A"; k=-(1+1)) == dna"A"
-    @test circshift(dna"AT"; k=-(1+2)) == dna"TA"
-    @test circshift(dna"ATG"; k=-(1+3)) == dna"GAT"
-    @test circshift(dna"ATGC"; k=-(1+4)) == dna"CATG"
+    @test circshift(dna"A"; k=-(1 + 1)) == dna"A"
+    @test circshift(dna"AT"; k=-(1 + 2)) == dna"TA"
+    @test circshift(dna"ATG"; k=-(1 + 3)) == dna"GAT"
+    @test circshift(dna"ATGC"; k=-(1 + 4)) == dna"CATG"
 
-    @test circshift(dna"A"; k=-(2+1)) == dna"A"
-    @test circshift(dna"AT"; k=-(2+2)) == dna"AT"
-    @test circshift(dna"ATG"; k=-(2+3)) == dna"TGA"
-    @test circshift(dna"ATGC"; k=-(2+4)) == dna"GCAT"    
+    @test circshift(dna"A"; k=-(2 + 1)) == dna"A"
+    @test circshift(dna"AT"; k=-(2 + 2)) == dna"AT"
+    @test circshift(dna"ATG"; k=-(2 + 3)) == dna"TGA"
+    @test circshift(dna"ATGC"; k=-(2 + 4)) == dna"GCAT"
 end
 
 @testset "Amino acid to codons" begin
@@ -114,7 +119,7 @@ end
         gc = translateAA2Codons(ncbi_trans_table[1], RNA)
         @test gc[AA_F] == Set([rna"UUU", rna"UUC"])
         @test gc[AA_Term] == Set([rna"UAA", rna"UAG", rna"UGA"])
-    end    
+    end
 end
 
 @testset "codon to amino acid" begin
@@ -125,5 +130,28 @@ end
     @testset "Standard RNA" begin
         gc = translateCodon2AA(ncbi_trans_table[1], RNA)
         @test gc[rna"AUG"] == AA_M
-    end    
+    end
+end
+
+@testset "stripped alphabet" begin
+    @testset "DNA" begin
+        nts = stripped_alphabet(DNA)
+        @test length(nts) == 4
+        @test DNA_A ∈ nts
+        @test !(DNA_B ∈ nts)
+    end
+
+    @testset "RNA" begin
+        nts = stripped_alphabet(RNA)
+        @test length(nts) == 4
+        @test RNA_A ∈ nts
+        @test !(RNA_B ∈ nts)
+    end
+
+    @testset "Amino acids" begin
+        aas = stripped_alphabet(AminoAcid)
+        @test length(aas) == 20
+        @test AA_R ∈ aas
+        @test !(AA_Term ∈ aas)
+    end
 end

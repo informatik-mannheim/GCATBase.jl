@@ -31,6 +31,12 @@ GCATBase.dinucs
 GCATBase.tetranucs
 ```
 
+It also possible, to create other sets, e.g. all di-nucleoties over the
+alphabet {A, T}:
+```@example rt
+alltuples((DNA_A, DNA_T), 2)
+```
+
 ## Tuples from sequences
 
 A sequence can be split into non-overlapping tuples of a given length using the
@@ -56,12 +62,63 @@ Let's shift some RNA in the other direction:
 circshift(rna"AGCU"; k=-1)
 ```
 
-We can also use `circshift` together with `tuples` to generate all
+We can also use [`GCATBase.circshift`](@ref) together with [`Base.split`](@ref) to generate all
 cyclic permutations of k-mers in a sequence:
 
 ```@example rt
 seq = rna"CAGCUUGAG"
 join(circshift.(split(seq, l=3)))
+```
+
+## Genetic code tables
+
+`GCATBase` provides mappings for genetic code tables. [`GCATBase.translateAA2Codons`](@ref) creates a dictionary which maps 
+an amino acid to a set of associated codons. This might be useful if a frequent lookup for the mapping
+is required.
+
+```@example rt
+a2c = translateAA2Codons()
+println(a2c)
+
+println(a2c[AA_G])
+println(a2c[AA_Term])
+```
+
+We can also specify the genetic code as listed at NCBI <https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi>.
+`BioSequences.ncbi_trans_table` provides part of it as a list:
+
+```@example rt
+using BioSequences
+
+ncbi_trans_table
+```
+Now a translation is created for the vertebrate mitochondrial code (index 2) which has
+four stop codons. `translateAA2Codon` expects two parameters: 1) the genetic code table
+and 2) which nucleoties should be used (i.e. `BioSequences.DNA` or `BioSequences.RNA`).
+
+```@example rt
+a2c = translateAA2Codons(ncbi_trans_table[2], DNA)
+
+println(a2c[AA_V])
+println(a2c[AA_Term]) # 4 stop codons
+```
+
+We could also create codons based on RNA.
+
+```@example rt
+a2cRNA = translateAA2Codons(ncbi_trans_table[2], RNA)
+
+println(a2cRNA[AA_V])
+```
+
+It is also possible to obtain the amino acid which is encoded by a codon. [`GCATBase.translateCodon2AA`](@ref)
+creates a dictionary which maps a codon to its amino acid. This is similar to `BioSequences.translate`
+with the difference that the amino acid is _not_ a sequence but the amino acid itself (of type `AminoAcid`).
+
+```@example rt
+c2a = translateCodon2AA() # Standard genetic code / DNA
+
+println(c2a[dna"ATG"])
 ```
 
 # API
