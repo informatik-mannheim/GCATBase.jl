@@ -102,3 +102,28 @@ end
     @test circshift(dna"ATG"; k=-(2+3)) == dna"TGA"
     @test circshift(dna"ATGC"; k=-(2+4)) == dna"GCAT"    
 end
+
+@testset "Amino acid to codons" begin
+    @testset "Standard DNA" begin
+        gc = translateAA2Codons()
+        @test gc[AA_F] == Set([dna"TTT", dna"TTC"])
+        @test gc[AA_Term] == Set([dna"TAA", dna"TAG", dna"TGA"])
+    end
+
+    @testset "Standard RNA" begin
+        gc = translateAA2Codons(ncbi_trans_table[1], RNA)
+        @test gc[AA_F] == Set([rna"UUU", rna"UUC"])
+        @test gc[AA_Term] == Set([rna"UAA", rna"UAG", rna"UGA"])
+    end    
+end
+
+@testset "codon to amino acid" begin
+    @testset "Standard DNA" begin
+        gc = translateCodon2AA()
+        @test gc[dna"ATG"] == AA_M
+    end
+    @testset "Standard RNA" begin
+        gc = translateCodon2AA(ncbi_trans_table[1], RNA)
+        @test gc[rna"AUG"] == AA_M
+    end    
+end
